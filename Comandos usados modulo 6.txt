@@ -1,0 +1,345 @@
+Comandos usados practica 1
+
+============================================
+============================================
+
+1. Instalar gpg2
+
+Abre tu terminal y ejecuta:
+
+sudo apt update
+sudo apt install gnupg2 -y
+
+
+
+2. Crear directorio y archivo
+
+mkdir ~/documento_secreto
+cd ~/documento_secreto
+echo "Este archivo contiene información confidencial." > secreto.txt
+
+
+3. Cifrar el archivo con gpg2
+
+Usa la clave pública para cifrar el archivo:
+
+sudo gpg2 --symmetric secreto.txt
+
+
+Esto generará un archivo secreto.txt.gpg.
+
+Ahora puedes eliminar el original si deseas:
+
+
+rm secreto.txt
+
+
+4. Intentar acceder al archivo cifrado
+
+Si intentas leer el archivo cifrado directamente:
+
+
+cat secreto.txt.gpg
+
+
+Verás texto cifrado ilegible (caracteres extraños).
+
+
+
+5. Descifrar el archivo y mostrar el contenido
+
+
+gpg2 -d secreto.txt.gpg > secreto_descifrado.txt
+cat secreto_descifrado.txt
+
+
+Si lo deseas, también puedes usar:
+
+
+gpg2 -o secreto_descifrado.txt -d secreto.txt.gpg
+
+============================================
+============================================
+
+Comandos usados practica 2
+
+============================================
+============================================
+
+Paso 1: Instalar y habilitar los servicios
+
+Ejecuta los siguientes comandos para instalar y habilitar los servicios HTTP (Apache), FTP (vsftpd) y SSH:
+
+
+sudo apt update
+sudo apt install -y apache2 vsftpd openssh-server
+
+
+Habilita y verifica que los servicios están corriendo:
+
+
+sudo systemctl enable --now apache2 vsftpd ssh
+sudo systemctl status apache2 vsftpd ssh
+
+
+
+Paso 2: Bloquear tráfico con iptables
+
+Bloquea los puertos 80 (HTTP), 21 (FTP) y 22 (SSH):
+
+sudo iptables -A INPUT -p tcp --dport 80 -j DROP
+sudo iptables -A INPUT -p tcp --dport 21 -j DROP
+sudo iptables -A INPUT -p tcp --dport 22 -j DROP
+
+
+Verifica las reglas aplicadas:
+
+
+sudo iptables -L 
+
+
+Prueba conectarte de nuevo con curl, ftp y ssh. No deberías poder acceder.
+
+
+Paso 3: Habilitar tráfico con iptables
+
+Elimina las reglas para permitir el tráfico nuevamente:
+
+
+sudo iptables -D INPUT -p tcp --dport 80 -j DROP
+sudo iptables -D INPUT -p tcp --dport 21 -j DROP
+sudo iptables -D INPUT -p tcp --dport 22 -j DROP
+
+
+Verifica que las reglas han sido eliminadas:
+
+
+sudo iptables -L 
+
+
+Prueba acceder de nuevo y debería funcionar.
+
+
+
+Paso 4: Bloquear tráfico con ufw
+
+Si ufw no está instalado, instálalo:
+
+
+sudo apt install ufw -y
+
+
+Bloquea los puertos:
+
+sudo ufw deny 80
+sudo ufw deny 21
+sudo ufw deny 22
+
+
+Verifica las reglas:
+
+
+sudo ufw status
+
+
+
+Prueba conectarte y no deberías poder acceder.
+
+
+
+Paso 5: Habilitar tráfico con ufw
+
+Permite nuevamente los puertos:
+
+
+sudo ufw allow 80
+sudo ufw allow 21
+sudo ufw allow 22
+
+
+Verifica que las reglas han sido eliminadas:
+
+
+sudo ufw status
+
+
+Ahora los servicios deberían estar accesibles nuevamente.
+
+============================================
+============================================
+
+Comandos usados practica 3
+
+============================================
+============================================
+
+Repositorios de Ubuntu para descargar el snort:
+
+Ubicación para añadirlos: sudo nano /etc/apt/sources.list
+
+
+sudo nano /etc/apt/sources.list
+
+#Repositorios principales 
+deb http://us.archive.ubuntu.com/ubuntu/ focal main restricted 
+deb http://us.archive.ubuntu.com/ubuntu/ focal-updates main restricted
+
+#Repositorios universe y multiverse
+deb http://us.archive.ubuntu.com/ubuntu/ focal universe 
+deb http://us.archive.ubuntu.com/ubuntu/ focal-updates universe 
+deb http://us.archive.ubuntu.com/ubuntu/ focal multiverse 
+deb http://us.archive.ubuntu.com/ubuntu/ focal-updates multiverse 
+
+#Repositorios de seguridad 
+deb http://security.ubuntu.com/ubuntu focal-security main restricted 
+deb http://security.ubuntu.com/ubuntu focal-security universe 
+deb http://security.ubuntu.com/ubuntu focal-security multiverse 
+
+
+
+
+Keys para activar los repositorios:
+
+sudo apt-key export 3B4FE6ACC0B21F32 | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/ubuntu-keyring-3B4FE6ACC0B21F32.gpg
+sudo apt-key export 871920D1991BC93C | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/ubuntu-keyring-871920D1991BC93C.gpg
+
+
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 871920D1991BC93C
+
+
+
+Crear archivo para no permitir actualizaciones de ubuntu:
+
+
+sudo nano /etc/apt/preferences.d/ubuntu.pref
+
+Package: *
+Pin: release o=Ubuntu 
+Pin-Priority: 50 
+
+
+
+Reglas VAR:
+
+
+var RULE_PATH /etc/snort/rules
+var SO_RULE_PATH /etc/snort/so_rules 
+var PREPROC_RULE_PATH /etc/snort/preproc_rules 
+
+
+Comprobar configuración:
+
+
+
+snort -T -i ens33 -c /etc/snort/snort.conf
+
+
+Desplegar ids:
+
+sudo snort -A console -q -u snort -g snort -c /etc/snort/snort.conf -i ens33
+
+
+Configuración de local.rules:
+
+
+alert icmp any any -> $HOME_NET any (msg:"Trafico ICMP detectado"; sid: 100001; rev:1;) 
+alert tcp any any -> $HOME_NET 21 (msg:"Trafico FTP detectado"; sid: 100002; rev:1;) 
+alert tcp any any -> $HOME_NET 22 (msg:"Trafico SSH detectado"; sid: 100003; rev:1;) 
+alert tcp any any -> $HOME_NET 80 (msg:"Trafico HTTP detectado"; sid: 100004; rev:1;)
+
+
+include $RULE_PATH/local.rules
+
+============================================
+============================================
+
+Comandos usados practica 4
+
+============================================
+============================================
+
+1. Instalar Google Authenticator en tu VM
+
+sudo apt update
+sudo apt install libpam-google-authenticator
+
+
+
+2. Configurar Google Authenticator para el usuario SSH
+
+Ejecuta esto desde el usuario con el que vas a acceder vía SSH:
+
+
+google-authenticator
+
+
+El sistema te hará varias preguntas. Responde así:
+
+- ¿Quiere tokens basados en tiempo? → y
+- ¿Desea que actualice el archivo de configuración? → y
+- ¿Desea evitar múltiples usos del mismo token? → y
+- ¿Aumentar el tiempo de espera para posibles retrasos? → y
+- ¿Desea desactivar el acceso si el archivo de configuración falta? → y
+
+Guarda el código QR o la clave secreta, escanéala con Google Authenticator en tu teléfono.
+
+
+
+3. Configurar PAM para usar Google Authenticator
+
+Edita el archivo PAM SSH:
+
+
+sudo nano /etc/pam.d/sshd
+
+
+Agrega esta línea al final del archivo:
+
+
+auth required pam_google_authenticator.so
+
+
+Asegúrate que esté después de otras líneas de autenticación (como @include common-auth).
+
+
+
+4. Configurar SSH para solicitar 2FA
+
+Edita el archivo de configuración SSH:
+
+sudo nano /etc/ssh/sshd_config
+
+
+Asegúrate de tener estos valores configurados:
+
+ChallengeResponseAuthentication yes
+UsePAM yes
+PasswordAuthentication yes
+
+
+5. Reiniciar el servicio SSH
+
+sudo systemctl restart ssh
+
+
+6. Demostración: Acceso desde máquina host a la VM
+
+En tu máquina host, accede vía SSH:
+
+
+ssh usuario@IP_VM
+
+
+El sistema te pedirá:
+
+1. Contraseña del usuario
+2. Código de verificación de Google Authenticator
+
+Ejemplo:
+
+
+usuario@ip-vm's password: ********
+Verification code: 123456
+
+Si ambos son correctos, entrarás a la VM exitosamente.
