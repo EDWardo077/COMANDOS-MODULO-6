@@ -1,4 +1,4 @@
-Comandos usados practica 1
+Comandos usados practica 1 -  Cifrado
 
 ============================================
 ============================================
@@ -61,7 +61,7 @@ gpg2 -o secreto_descifrado.txt -d secreto.txt.gpg
 ============================================
 ============================================
 
-Comandos usados practica 2
+Comandos usados practica 2 - IP tables - UFW/Firewall-cmd
 
 ============================================
 ============================================
@@ -168,7 +168,7 @@ Ahora los servicios deberían estar accesibles nuevamente.
 ============================================
 ============================================
 
-Comandos usados practica 3
+Comandos usados practica 3 - Instalacion de IDS snort
 
 ============================================
 ============================================
@@ -254,8 +254,7 @@ include $RULE_PATH/local.rules
 ============================================
 ============================================
 
-Comandos usados practica 4
-
+Comandos usados practica 4 - Configurar 2FA con google authenticator Modulo PAM para Acceso SSH
 ============================================
 ============================================
 
