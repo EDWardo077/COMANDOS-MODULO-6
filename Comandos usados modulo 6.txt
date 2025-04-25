@@ -218,35 +218,59 @@ Package: *
 Pin: release o=Ubuntu 
 Pin-Priority: 50 
 
+REALIZAR EL UPDATE:
+sudo apt update
 
+INSTALAR SNORT:
+sudo apt-get install snort
 
 Reglas VAR:
+
+sudo nano /etc/snort.conf
 
 
 var RULE_PATH /etc/snort/rules
 var SO_RULE_PATH /etc/snort/so_rules 
 var PREPROC_RULE_PATH /etc/snort/preproc_rules 
 
+debajo de include $RULE_PATH/community-web-php.rules colocar lo siguiente:
+include $RULE_PATH/local.rules
+
+CONFIGURAR SNORT:
+sudo nano /etc/snort/snort.debian.conf:
+
+DEBIAN_SNORT_STARTUP="boot"
+DEBIAN_SNORT_HOME_NET="10.0.0.0/24"
+DEBIAN_SNORT_OPTIONS=""
+DEBIAN_SNORT_INTERFACE="ens33"
+DEBIAN_SNORT_SEND_STATS="true"
+DEBIAN_SNORT_STATS_RCPT="root"
+DEBIAN_SNORT_STATS_THRESHOLD="1"
+
+
+
 
 Comprobar configuración:
 
 
 
-snort -T -i ens33 -c /etc/snort/snort.conf
-
-
-Desplegar ids:
-
-sudo snort -A console -q -u snort -g snort -c /etc/snort/snort.conf -i ens33
-
+sudo snort -T -i ens33 -c /etc/snort/snort.conf
 
 Configuración de local.rules:
+
+sudo nano /etc/snort/rules/local.rules
 
 
 alert icmp any any -> $HOME_NET any (msg:"Trafico ICMP detectado"; sid: 100001; rev:1;) 
 alert tcp any any -> $HOME_NET 21 (msg:"Trafico FTP detectado"; sid: 100002; rev:1;) 
 alert tcp any any -> $HOME_NET 22 (msg:"Trafico SSH detectado"; sid: 100003; rev:1;) 
 alert tcp any any -> $HOME_NET 80 (msg:"Trafico HTTP detectado"; sid: 100004; rev:1;)
+
+
+Desplegar ids:
+
+sudo snort -A console -q -u snort -g snort -c /etc/snort/snort.conf -i ens33
+
 
 
 include $RULE_PATH/local.rules
